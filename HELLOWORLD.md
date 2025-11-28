@@ -1,11 +1,10 @@
-# Hello (Go)
+# Hello (Go) — moved to repository root
 
 Simple Hello World Go program.
 
 Build:
 
 ```sh
-cd helloworld
 go build -o helloworld
 ```
 

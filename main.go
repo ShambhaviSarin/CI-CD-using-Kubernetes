@@ -6,7 +6,7 @@ import (
     "net/http"
     "os"
 
-    "github.com/ShambhaviSarin/CI-CD-using-Kubernetes/helloworld/src/greet"
+    "github.com/ShambhaviSarin/CI-CD-using-Kubernetes/src/greet"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
