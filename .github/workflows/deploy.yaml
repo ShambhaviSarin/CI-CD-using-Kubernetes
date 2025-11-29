@@ -55,15 +55,16 @@ jobs:
       run: |
         kubectl create namespace helloworld || true
 
-    # 10. Create GHCR secret in Kubernetes
-    - name: Create GHCR secret
+    # 10. Apply GHCR secret in Kubernetes
+    - name: Apply GHCR secret
       run: |
         kubectl create secret docker-registry ghcr-secret \
           --docker-server=ghcr.io \
           --docker-username=shambhavisarin \
           --docker-password=${{ secrets.GHCR_PAT }} \
           --docker-email=sarin.shambhavi@gmail.com \
-          -n helloworld || true
+          -n helloworld \
+          --dry-run=client -o yaml | kubectl apply -f -
 
     # 11. Apply Kubernetes manifests
     - name: Apply Kubernetes manifests
@@ -72,7 +73,7 @@ jobs:
     # 12. Wait for pods to be ready
     - name: Wait for pods
       run: |
-        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=120s
+        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=180s
 
     # 13. Get Minikube service URL
     - name: Get Minikube service URL
