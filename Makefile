@@ -1,5 +1,5 @@
 BINARY_NAME=helloworld
-IMAGE_NAME=ghcr.io/ShambhaviSarin/helloworld:latest
+IMAGE_NAME=ghcr.io/shambhavisarin/helloworld:latest
 
 .PHONY: all build test docker-build clean run
 
