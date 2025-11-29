@@ -20,6 +20,12 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
     msg := greet.Hello(name)
     fmt.Fprintf(w, "%s\n", msg)
     log.Printf("request-id=%s path=%s name=%s", reqID, r.URL.Path, name)
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        fmt.Fprintln(w, "Hello from Kubernetes CI/CD!")
+    })
+
+    http.ListenAndServe(":8080", nil)
 }
 
 func main() {
