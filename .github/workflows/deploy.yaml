@@ -50,8 +50,8 @@ jobs:
     # 7. Build and push Docker image to GHCR
     - name: Build and push Docker image
       run: |
-        docker build -t ghcr.io/${{ github.repository_owner }}/helloworld:latest .
-        docker push ghcr.io/${{ github.repository_owner }}/helloworld:latest
+        docker build -t ghcr.io/shambhavisarin/helloworld:latest .
+        docker push ghcr.io/shambhavisarin/helloworld:latest
 
     # 8. Apply Kubernetes manifests
     - name: Apply Kubernetes manifests
