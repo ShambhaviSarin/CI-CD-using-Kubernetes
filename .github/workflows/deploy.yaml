@@ -13,62 +13,59 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # 2. Setup Go and modules
+    # 2. Setup Go
     - name: Setup Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.20'
 
+    # 3. Tidy modules
     - name: Tidy modules
       run: go mod tidy
 
+    # 4. Run Go Tests
     - name: Run Go Tests
       run: go test ./... -v
 
-    # 3. Install Minikube
+    # 5. Log in to GHCR
+    - name: Log in to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    # 6. Build and push Docker image to GHCR
+    - name: Build and push Docker image
+      run: |
+        docker build -t ghcr.io/shambhavisarin/helloworld:latest .
+        docker push ghcr.io/shambhavisarin/helloworld:latest
+
+    # 7. Install Minikube
     - name: Install Minikube
       run: |
         curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
         chmod +x minikube-linux-amd64
         sudo mv minikube-linux-amd64 /usr/local/bin/minikube
 
-    # 4. Start Minikube
+    # 8. Start Minikube
     - name: Start Minikube
       run: |
         minikube start --driver=docker --kubernetes-version=v1.28.0
         kubectl get nodes
 
-    # 5. Configure Docker to use Minikube
-    - name: Configure Docker for Minikube
-      run: |
-        eval $(minikube -p minikube docker-env)
-
-    # 6. Log in to GHCR
-    - name: Log in to GHCR
-      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-    # 7. Build and push Docker image to GHCR
-    - name: Build and push Docker image
-      run: |
-        docker build -t ghcr.io/shambhavisarin/helloworld:latest .
-        docker push ghcr.io/shambhavisarin/helloworld:latest
-
-    # 8. Apply Kubernetes manifests
+    # 9. Apply Kubernetes manifests
     - name: Apply Kubernetes manifests
       run: kubectl apply -f application.yaml
 
-    # 9. Wait for pods to be ready
+    # 10. Wait for pods to be ready
     - name: Wait for pods
       run: |
         kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=90s
 
-    # 10. Get Minikube service URL
+    # 11. Get Minikube service URL
     - name: Get Minikube service URL
       id: url
       run: |
         echo "SERVICE_URL=$(minikube service helloworld-service -n helloworld --url)" >> $GITHUB_ENV
 
-    # 11. Test API endpoint via curl
+    # 12. Test API endpoint via curl
     - name: Test API endpoint via curl
       run: |
         echo "Testing API at $SERVICE_URL"
