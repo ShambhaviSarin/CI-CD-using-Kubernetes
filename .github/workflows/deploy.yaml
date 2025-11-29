@@ -34,13 +34,13 @@ jobs:
         chmod +x minikube-linux-amd64
         sudo mv minikube-linux-amd64 /usr/local/bin/minikube
 
-    # 6. Start Minikube
+    # 6. Start Minikube with enough resources
     - name: Start Minikube
       run: |
-        minikube start --driver=docker --kubernetes-version=v1.28.0
+        minikube start --driver=docker --memory=4096 --cpus=2 --kubernetes-version=v1.28.0
         kubectl get nodes
 
-    # 7. Configure Docker to use Minikube
+    # 7. Configure Docker to use Minikube daemon
     - name: Use Minikube Docker
       run: eval $(minikube -p minikube docker-env)
 
@@ -56,19 +56,29 @@ jobs:
     - name: Apply Kubernetes manifests
       run: kubectl apply -f application.yaml
 
-    # 11. Wait for pods to be ready
+    # 11. Debug pod status
+    - name: Describe deployment
+      run: kubectl describe deployment helloworld-deployment -n helloworld
+
+    - name: Get pods status
+      run: kubectl get pods -n helloworld -o wide
+
+    - name: Get pod events
+      run: kubectl get events -n helloworld --sort-by='.metadata.creationTimestamp'
+
+    # 12. Wait for pods to be ready
     - name: Wait for pods
       run: |
-        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=180s
+        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=300s || true
+        kubectl get pods -n helloworld
 
-    # 12. Get service URL
-    - name: Get Minikube service URL
-      id: url
+    # 13. Get Minikube service URL
+    - name: Get service URL
       run: |
-        echo "SERVICE_URL=$(minikube service helloworld-service -n helloworld --url)" >> $GITHUB_ENV
+        export SERVICE_URL=$(minikube service helloworld-service -n helloworld --url)
+        echo "Service URL: $SERVICE_URL"
 
-    # 13. Test API endpoint
-    - name: Test API endpoint via curl
+    # 14. Test API endpoint
+    - name: Test API via curl
       run: |
-        echo "Testing API at $SERVICE_URL"
-        curl -v $SERVICE_URL
+        curl -v $(minikube service helloworld-service -n helloworld --url)

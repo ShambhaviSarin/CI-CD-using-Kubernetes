@@ -47,7 +47,8 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-  type: LoadBalancer
+    nodePort: 30080
+  type: NodePort
 
 ---
 apiVersion: autoscaling/v2
