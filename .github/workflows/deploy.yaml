@@ -27,7 +27,7 @@ jobs:
     - name: Run Go Tests
       run: go test ./... -v
 
-    # 5. Log in to GHCR
+    # 5. Log in to GHCR using PAT
     - name: Log in to GHCR
       run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u shambhavisarin --password-stdin
 
@@ -50,22 +50,37 @@ jobs:
         minikube start --driver=docker --kubernetes-version=v1.28.0
         kubectl get nodes
 
-    # 9. Apply Kubernetes manifests
+    # 9. Create namespace
+    - name: Create namespace
+      run: |
+        kubectl create namespace helloworld || true
+
+    # 10. Create GHCR secret in Kubernetes
+    - name: Create GHCR secret
+      run: |
+        kubectl create secret docker-registry ghcr-secret \
+          --docker-server=ghcr.io \
+          --docker-username=shambhavisarin \
+          --docker-password=${{ secrets.GHCR_PAT }} \
+          --docker-email=sarin.shambhavi@gmail.com \
+          -n helloworld || true
+
+    # 11. Apply Kubernetes manifests
     - name: Apply Kubernetes manifests
       run: kubectl apply -f application.yaml
 
-    # 10. Wait for pods to be ready
+    # 12. Wait for pods to be ready
     - name: Wait for pods
       run: |
-        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=90s
+        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=120s
 
-    # 11. Get Minikube service URL
+    # 13. Get Minikube service URL
     - name: Get Minikube service URL
       id: url
       run: |
         echo "SERVICE_URL=$(minikube service helloworld-service -n helloworld --url)" >> $GITHUB_ENV
 
-    # 12. Test API endpoint via curl
+    # 14. Test API endpoint via curl
     - name: Test API endpoint via curl
       run: |
         echo "Testing API at $SERVICE_URL"
