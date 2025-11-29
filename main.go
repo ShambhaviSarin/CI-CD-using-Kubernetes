@@ -6,13 +6,20 @@ import (
     "net/http"
     "os"
 
+    "github.com/google/uuid"
+
     "github.com/ShambhaviSarin/CI-CD-using-Kubernetes/src/greet"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
+    // generate a small request id using google/uuid
+    reqID := uuid.New().String()
+    w.Header().Set("X-Request-ID", reqID)
+
     name := r.URL.Query().Get("name")
     msg := greet.Hello(name)
-    fmt.Fprintln(w, msg)
+    fmt.Fprintf(w, "%s\n", msg)
+    log.Printf("request-id=%s path=%s name=%s", reqID, r.URL.Path, name)
 }
 
 func main() {
