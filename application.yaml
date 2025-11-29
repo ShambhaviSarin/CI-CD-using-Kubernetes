@@ -23,8 +23,8 @@ spec:
     spec:
       containers:
       - name: helloworld
-        image: ghcr.io/shambhavisarin/helloworld:latest
-        imagePullPolicy: Always
+        image: helloworld:local
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
         resources:
@@ -34,8 +34,6 @@ spec:
           limits:
             cpu: "500m"
             memory: "256Mi"
-      imagePullSecrets:
-      - name: ghcr-secret
 
 ---
 apiVersion: v1
