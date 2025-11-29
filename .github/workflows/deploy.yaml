@@ -40,13 +40,17 @@ jobs:
         minikube start --driver=docker --memory=4096 --cpus=2 --kubernetes-version=v1.28.0
         kubectl get nodes
 
-    # 7. Configure Docker to use Minikube daemon
-    - name: Use Minikube Docker
-      run: eval $(minikube -p minikube docker-env)
+    # 7. Start Minikube
+    - name: Start Minikube
+      run: |
+        minikube start --driver=docker --memory=4096 --cpus=2 --kubernetes-version=v1.28.0
+        kubectl get nodes
 
     # 8. Build Docker image inside Minikube
-    - name: Build Docker image
-      run: docker build -t helloworld:local .
+    - name: Build Docker image inside Minikube
+      run: |
+        eval $(minikube -p minikube docker-env)
+        docker build -t helloworld:local .
 
     # 9. Create namespace
     - name: Create namespace
@@ -69,7 +73,7 @@ jobs:
     # 12. Wait for pods to be ready
     - name: Wait for pods
       run: |
-        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=300s || true
+        kubectl wait --for=condition=Ready pods -l app=helloworld -n helloworld --timeout=120s || true
         kubectl get pods -n helloworld
 
     # 13. Get Minikube service URL
